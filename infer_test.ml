@@ -66,7 +66,7 @@ let test_infer3 = (match (infer [] (App((Lambda ("x", Int(5))), Int(6)))) with
                    | ([], TInt) -> true
                    | _ -> false)
 let test_infer4 = try(ignore(infer [] (App(Int(3), Int(4)))); false) with UnifyError(TFun(_), TInt) -> true | _ -> false
-let test_infer5 = try(ignore(infer [] (App(Int(3), App(Float(2.0), Float(3.0))))); false) with UnifyError(TFun(_), TFloat) -> true | _ -> false
+let test_infer5 = try(ignore(infer [] (App(App(Int(3), Int(5)), App(Float(2.0), Float(3.0))))); false) with UnifyError(TFun(_), TInt) -> true | _ -> false
 
 
 let store = ref []
@@ -102,9 +102,13 @@ let rec infer_cps env expr k = match expr with
 
 let init () = store := []
 
-let test_infer_cps1 = infer_cps [] (Int(3)) (fun k -> k)
-let test_infer_cps2 = infer_cps [("x", TInt)] (Lambda ("x", Int(5))) (fun k -> k)
-let test_infer_cps3 = infer_cps [] (App((Lambda ("x", Int(5))), Int(6))) (fun k -> k)
-let test_infer_cps4 = infer_cps [] (App(Int(3), Int(4))) (fun k -> k)
-let test_infer_cps5 = infer_cps [] (App(App(Int(3), Int(5)), App(Float(2.0), Float(3.0)))) (fun k -> k)                       
+let infer_cps_top env expr k =
+  init ();
+  infer_cps env expr k
+            
+let test_infer_cps1 = infer_cps_top [] (Int(3)) (fun k -> k)
+let test_infer_cps2 = infer_cps_top [("x", TInt)] (Lambda ("x", Int(5))) (fun k -> k)
+let test_infer_cps3 = infer_cps_top [] (App((Lambda ("x", Int(5))), Int(6))) (fun k -> k)
+let test_infer_cps4 = infer_cps_top [] (App(Int(3), Int(4))) (fun k -> k)
+let test_infer_cps5 = infer_cps_top [] (App(App(Int(3), Int(5)), App(Float(2.0), Float(3.0)))) (fun k -> k)                       
 
